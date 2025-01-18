@@ -1,15 +1,22 @@
+import uuid
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.hashers import make_password
-# from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.exceptions import ValidationError
 
 from .validators import validate_username
 
-# User = get_user_model()
+MAX_LENGTH_32 = 32
+MAX_LENGTH_64 = 64
+MAX_LENGTH_100 = 100
+MAX_LENGTH_128 = 128
 MAX_LENGTH_150 = 150
 MAX_LENGTH_254 = 254
+MAX_LENGTH_256 = 256
+
 
 class UserModel(AbstractUser):
     """Кастомная модель пользователя."""
@@ -49,27 +56,27 @@ class UserModel(AbstractUser):
     def __str__(self):
         return str(self.username)
 
+User = get_user_model()
+
 class Ingredient(models.Model):
-    name = models.CharField(max_length=64)
-    measurement_unit = models.CharField(max_length=64)
+    name = models.CharField(max_length=MAX_LENGTH_128)
+    measurement_unit = models.CharField(max_length=MAX_LENGTH_64)
 
     def __str__(self):
         return self.name
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=64)
-    slug = models.SlugField(max_length=12)
+    name = models.CharField(max_length=MAX_LENGTH_32)
+    slug = models.SlugField(max_length=MAX_LENGTH_32)
 
     def __str__(self):
         return self.name
 
 
 class Recipe(models.Model):
-    name = models.CharField(max_length=100)
-    text = models.CharField(max_length=256)
-    is_favorited = models.BooleanField(default=False)
-    is_in_shopping_cart = models.BooleanField(default=False)
+    name = models.CharField(max_length=MAX_LENGTH_100)
+    text = models.CharField(max_length=MAX_LENGTH_256)
     cooking_time = models.IntegerField()
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='recipes',
@@ -89,12 +96,22 @@ class Recipe(models.Model):
     created = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
+    code = models.CharField(max_length=10, unique=True, default='')
 
     class Meta:
         ordering = ['-created']
     
     def __str__(self):
         return self.name
+    
+    @staticmethod
+    def generate_code():
+        return str(uuid.uuid4().int)[:10]
+    
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = self.generate_code()
+        super().save(*args, **kwargs)
 
 
 class IngredientRecipe(models.Model):
@@ -112,3 +129,53 @@ class TagRecipe(models.Model):
 
     def __str__(self):
         return f'{self.recipe} {self.tag}'
+
+
+class Follow(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='following_user')
+    following = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='following')
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'following'],
+                name='user_following'
+            ),
+            models.CheckConstraint(
+                name="prevent_self_follow",
+                check=~models.Q(user=models.F("following")),
+            ),
+        ]
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='favorite')
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='favorite')
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='user_recipe'
+            ),
+        ]
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='shopping')
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='shopping')
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='user_recipe_shopping'
+            ),
+        ]
+        
