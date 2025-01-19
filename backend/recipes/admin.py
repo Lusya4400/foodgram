@@ -1,7 +1,9 @@
+"""Настройка панели администратора."""
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import UserModel, Tag, Ingredient, Recipe, Favorite
+from .models import UserModel, Tag, Ingredient, Recipe
+
 
 @admin.register(UserModel)
 class UserModelAdmin(UserAdmin):

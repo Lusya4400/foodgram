@@ -2,20 +2,14 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.core.exceptions import ValidationError
 
+from .conctans import (
+    MAX_LENGTH_32, MAX_LENGTH_64, MAX_LENGTH_100, MAX_LENGTH_128,
+    MAX_LENGTH_150, MAX_LENGTH_254, MAX_LENGTH_256
+)
 from .validators import validate_username
-
-MAX_LENGTH_32 = 32
-MAX_LENGTH_64 = 64
-MAX_LENGTH_100 = 100
-MAX_LENGTH_128 = 128
-MAX_LENGTH_150 = 150
-MAX_LENGTH_254 = 254
-MAX_LENGTH_256 = 256
 
 
 class UserModel(AbstractUser):
@@ -31,7 +25,7 @@ class UserModel(AbstractUser):
         unique=True,
         verbose_name='Email'
     )
-    first_name = models.CharField(    
+    first_name = models.CharField(
         max_length=MAX_LENGTH_150,
         verbose_name='Имя'
     )
@@ -42,11 +36,11 @@ class UserModel(AbstractUser):
     avatar = models.ImageField(
         upload_to='recipes/avatars/',
         null=True,
-        default=None
+        default=None,
+        verbose_name='Аватар'
     )
 
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
-
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -56,31 +50,65 @@ class UserModel(AbstractUser):
     def __str__(self):
         return str(self.username)
 
+
 User = get_user_model()
 
+
 class Ingredient(models.Model):
-    name = models.CharField(max_length=MAX_LENGTH_128)
-    measurement_unit = models.CharField(max_length=MAX_LENGTH_64)
+    """Модель для ингредиентов."""
+    name = models.CharField(
+        max_length=MAX_LENGTH_128,
+        verbose_name='Наименование'
+    )
+    measurement_unit = models.CharField(
+        max_length=MAX_LENGTH_64,
+        verbose_name='Единица измерения'
+    )
+
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
         return self.name
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=MAX_LENGTH_32)
-    slug = models.SlugField(max_length=MAX_LENGTH_32)
+    """Модель для тегов."""
+    name = models.CharField(
+        max_length=MAX_LENGTH_32,
+        verbose_name='Наименование'
+    )
+    slug = models.SlugField(
+        max_length=MAX_LENGTH_32,
+        verbose_name='Слаг'
+    )
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
 
     def __str__(self):
         return self.name
 
 
 class Recipe(models.Model):
-    name = models.CharField(max_length=MAX_LENGTH_100)
-    text = models.CharField(max_length=MAX_LENGTH_256)
-    cooking_time = models.IntegerField()
+    """Модель для рецептов."""
+    name = models.CharField(
+        max_length=MAX_LENGTH_100,
+        verbose_name='Наименование'
+    )
+    text = models.CharField(
+        max_length=MAX_LENGTH_256,
+        verbose_name='Порядок приготовления'
+    )
+    cooking_time = models.IntegerField(
+        verbose_name='Время приготовления'
+    )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='recipes',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
     )
     tags = models.ManyToManyField(
         Tag, through='TagRecipe'
@@ -91,7 +119,8 @@ class Recipe(models.Model):
     image = models.ImageField(
         upload_to='recipes/images/',
         null=True,
-        default=None
+        default=None,
+        verbose_name='Картинка'
     )
     created = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
@@ -99,15 +128,17 @@ class Recipe(models.Model):
     code = models.CharField(max_length=10, unique=True, default='')
 
     class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
         ordering = ['-created']
-    
+
     def __str__(self):
         return self.name
-    
+
     @staticmethod
     def generate_code():
         return str(uuid.uuid4().int)[:10]
-    
+
     def save(self, *args, **kwargs):
         if not self.code:
             self.code = self.generate_code()
@@ -115,6 +146,7 @@ class Recipe(models.Model):
 
 
 class IngredientRecipe(models.Model):
+    """Модель для связи ингредиентов с рецептами."""
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     amount = models.IntegerField()
@@ -124,6 +156,7 @@ class IngredientRecipe(models.Model):
 
 
 class TagRecipe(models.Model):
+    """Модель для связи тегов с рецептами."""
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
@@ -132,11 +165,12 @@ class TagRecipe(models.Model):
 
 
 class Follow(models.Model):
+    """Модель для подписок на пользователей."""
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='following_user')
     following = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='following')
-    
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -151,11 +185,12 @@ class Follow(models.Model):
 
 
 class Favorite(models.Model):
+    """Модель для избранных рецептов."""
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='favorite')
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name='favorite')
-    
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -166,11 +201,12 @@ class Favorite(models.Model):
 
 
 class ShoppingCart(models.Model):
+    """Модель для списка покупок."""
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='shopping')
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name='shopping')
-    
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -178,4 +214,3 @@ class ShoppingCart(models.Model):
                 name='user_recipe_shopping'
             ),
         ]
-        
