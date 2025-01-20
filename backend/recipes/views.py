@@ -218,7 +218,7 @@ class RecipeDetailView(APIView):
             return Response(
                 {'error': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND
             )
-        
+
 
 class FollowViewSet(viewsets.ModelViewSet):
     """Вьюсет для управления подписками на пользователей."""
