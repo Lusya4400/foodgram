@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import redirect
 from django.http import HttpResponse
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
@@ -197,7 +198,7 @@ class RecipeLinkView(APIView):
         try:
             recipe = Recipe.objects.get(id=id)
             short_link = (
-                f"{request.build_absolute_uri('/')[:-1]}/{recipe.code}/"
+                f"{request.build_absolute_uri('/s/')[:-1]}/{recipe.code}/"
             )
             return Response(
                 {'short-link': short_link}, status=status.HTTP_200_OK)
@@ -206,6 +207,18 @@ class RecipeLinkView(APIView):
                 {'error': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND
             )
 
+
+class RecipeDetailView(APIView):
+    """Вьюсет для перехода по короткой ссылке."""
+    def get(self, request, code):
+        try:
+            recipe = Recipe.objects.get(code=code)
+            return redirect(f'api/recipes/{recipe.id}/')
+        except Recipe.DoesNotExist:
+            return Response(
+                {'error': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND
+            )
+        
 
 class FollowViewSet(viewsets.ModelViewSet):
     """Вьюсет для управления подписками на пользователей."""

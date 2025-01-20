@@ -1,4 +1,4 @@
-"""Django settings for backend_footgram project."""
+"""Django settings for backend_foodgram project."""
 import os
 from pathlib import Path
 
@@ -7,17 +7,15 @@ from django.core.management.utils import get_random_secret_key
 
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', get_random_secret_key())
 
-# SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 DEBUG = os.getenv('DEBUG') == 'True'
 
-# ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'foodfavorite.zapto.org']
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -30,7 +28,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'django_filters',
-    'corsheaders',
+    # 'corsheaders',
     'recipes.apps.RecipesConfig',
 ]
 
@@ -45,13 +43,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_URLS_REGEX = r'^/api/.*$'
+# CORS_URLS_REGEX = r'^/api/.*$'
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-]
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+# ]
 
-ROOT_URLCONF = 'backend_footgram.urls'
+ROOT_URLCONF = 'backend_foodgram.urls'
 
 TEMPLATES = [
     {
@@ -69,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'backend_footgram.wsgi.application'
+WSGI_APPLICATION = 'backend_foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
@@ -78,6 +76,16 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', 'django'),
+#         'USER': os.getenv('POSTGRES_USER', 'django'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+#         'HOST': os.getenv('DB_HOST', ''),
+#         'PORT': os.getenv('DB_PORT', 5432)
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -112,7 +120,8 @@ AUTH_USER_MODEL = 'recipes.UserModel'
 STATIC_URL = '/static/'
 # STATICFILES_DIRS = [os.path.join(BASE_DIR, '..', 'frontend\public')]
 # STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
-STATIC_ROOT = '/backend_static/static/'
+STATIC_ROOT = BASE_DIR / 'collected_static'
+# STATIC_ROOT = '/backend_static/static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
