@@ -213,7 +213,7 @@ class RecipeDetailView(APIView):
     def get(self, request, code):
         try:
             recipe = Recipe.objects.get(code=code)
-            return redirect(f'api/recipes/{recipe.id}/')
+            return redirect(f'{request.build_absolute_uri}'api/recipes/{recipe.id}/')
         except Recipe.DoesNotExist:
             return Response(
                 {'error': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND
