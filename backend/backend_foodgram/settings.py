@@ -11,11 +11,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', get_random_secret_key())
 
-# DEBUG = True
 DEBUG = os.getenv('DEBUG') == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'foodfavorite.zapto.org']
 # ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+CSRF_TRUSTED_ORIGINS = [
+    'https://foodfavorite.zapto.org',
+]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -69,13 +72,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend_foodgram.wsgi.application'
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -86,9 +82,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', 5432)
     }
 }
-
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -118,10 +111,7 @@ USE_TZ = True
 AUTH_USER_MODEL = 'recipes.UserModel'
 
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, '..', 'frontend\public')]
-# STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 STATIC_ROOT = BASE_DIR / 'collected_static'
-# STATIC_ROOT = '/backend_static/static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
