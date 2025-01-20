@@ -15,6 +15,7 @@ DEBUG = os.getenv('DEBUG') == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'foodfavorite.zapto.org']
 # ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+
 CSRF_TRUSTED_ORIGINS = [
     'https://foodfavorite.zapto.org',
 ]
@@ -31,7 +32,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'django_filters',
-    # 'corsheaders',
     'recipes.apps.RecipesConfig',
 ]
 
@@ -45,12 +45,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-# CORS_URLS_REGEX = r'^/api/.*$'
-
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:3000',
-# ]
 
 ROOT_URLCONF = 'backend_foodgram.urls'
 
