@@ -10,10 +10,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from djoser.views import UserViewSet
-from rest_framework.authtoken.models import Token
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .conctans import PAGE_SIZE_USERS, PAGE_SIZE_RESIPES, MAX_PAGE_SIZE
+from .conctans import PAGE_SIZE_USERS, PAGE_SIZE_RESIPES
 from .filters import RecipeFilter
 from .models import (
     Ingredient, Recipe, Tag, Follow, Favorite, ShoppingCart, IngredientRecipe)
@@ -22,11 +21,10 @@ from .serializers import (
     IngredientSerializer, RecipeSerializer, RecipeSerializerForRead,
     UserModelSerializer, UserAvatarSerializer, TagSerializer, FollowSerializer,
     FavoriteSerializer, ShoppingCartSerializer
-    #SignupSerializer,TokenSerializer, ChangePasswordSerializer, 
 )
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level = logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 User = get_user_model()
 
@@ -35,15 +33,6 @@ class UserPagination(PageNumberPagination):
     """Пагинатор для списка пользователей."""
     page_size = PAGE_SIZE_USERS
     page_size_query_param = 'limit'
- #   max_page_size = MAX_PAGE_SIZE
-
-    # def get_paginated_response(self, data):
-    #     return Response({
-    #         'count': self.page.paginator.count,
-    #         'next': self.get_next_link(),
-    #         'previous': self.get_previous_link(),
-    #         'results': data
-    #     })
 
 
 class RecipePagination(UserPagination):
@@ -64,34 +53,6 @@ class UserModelViewSet(UserViewSet):
             return [AllowAny()]
         return [IsAuthenticated()]
 
-    # def create(self, request):
-    #     """Создание пользователя."""
-    #     serializer = SignupSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(
-    #         serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # @action(detail=False, methods=('post',),
-    #         permission_classes=(IsAuthenticated,))
-    # def set_password(self, request):
-    #     """Установка пароля."""
-    #     if not request.user.is_authenticated:
-    #         return Response(
-    #             {'detail': 'Пользователь не авторизован.'},
-    #             status=status.HTTP_401_UNAUTHORIZED)
-    #     serializer = ChangePasswordSerializer(
-    #         data=request.data, context={'request': request})
-    #     if serializer.is_valid():
-    #         user = request.user
-    #         user.set_password(serializer.validated_data['new_password'])
-    #         user.save()
-    #         return Response(
-    #             {"detail": "Пароль успешно изменен."},
-    #             status=status.HTTP_204_NO_CONTENT)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     # Без этого метода в список пользователей выводится только текущий
     # пользователь, несмотря на то, что выполены настройки joser в settings
     # 'PERMISSIONS':{'user_list': ['rest_framework.permissions.AllowAny'],},
@@ -103,7 +64,7 @@ class UserModelViewSet(UserViewSet):
         paginated_queryset = paginator.paginate_queryset(queryset, request)
         serializer = self.get_serializer(paginated_queryset, many=True)
         return paginator.get_paginated_response(serializer.data)
-    
+
     # def list(self, request):
     #     logger.debug(f'Validated {self.queryset}')
     #     logger.debug(f'Validated {self.permission_classes}')
@@ -127,27 +88,15 @@ class UserModelViewSet(UserViewSet):
             permission_classes=(IsAuthenticated,))
     def me(self, request):
         """Эндпоинт для изменения профиля текущего пользователя."""
-        # если убрать проверку, то при запросе от анонимного пользователя вылетает ошибка
-        # Original exception text was: 'AnonymousUser' object has no attribute 'email'.
-        if not request.user.is_authenticated: 
-            return Response( 
-                {'detail': 'Пользователь не авторизован.'}, 
-                status=status.HTTP_401_UNAUTHORIZED) 
+        # если убрать проверку, то при запросе от анонимного пользователя
+        # вылетает ошибка
+        # Original exception text was:
+        # 'AnonymousUser' object has no attribute 'email'.
+        if not request.user.is_authenticated:
+            return Response(
+                {'detail': 'Пользователь не авторизован.'},
+                status=status.HTTP_401_UNAUTHORIZED)
         return super().me(request)
-
-
-# class TokenView(APIView):
-#     """Вьюсет управления токенами."""
-#     permission_classes = (AllowAny,)
-
-#     def post(self, request):
-#         """Получение токена."""
-#         serializer = TokenSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = User.objects.get(email=serializer.validated_data['email'])
-#         token, _ = Token.objects.get_or_create(user=user)
-
-#         return Response({'auth_token': token.key}, status=status.HTTP_200_OK)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -213,7 +162,8 @@ class RecipeLinkView(APIView):
         try:
             recipe = Recipe.objects.get(id=id)
             short_link = (
-                f"{request.build_absolute_uri('/s/')[:-1]}/{recipe.short_code}/"
+                f"{request.build_absolute_uri('/s/')[:-1]}/"
+                f"{recipe.short_code}/"
             )
             return Response(
                 {'short-link': short_link}, status=status.HTTP_200_OK)

@@ -141,7 +141,7 @@ DJOSER = {
         'user': 'recipes.serializers.UserModelSerializer',
         'current_user': 'recipes.serializers.UserModelSerializer',
     },
-    'PERMISSIONS':{
+    'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
     },
     'LOGIN_FIELD': 'email',

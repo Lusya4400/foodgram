@@ -57,9 +57,6 @@ class User(AbstractUser):
         )
 
 
-# User = get_user_model()
-
-
 class Ingredient(models.Model):
     """Модель для ингредиентов."""
     name = models.CharField(
@@ -223,7 +220,10 @@ class Follow(models.Model):
         ordering = ['user__username']
 
     def __str__(self):
-        return f'Пользователь {self.user.username} подписан на {self.following.username}'
+        return (
+            f'Пользователь {self.user.username}'
+            f'подписан на {self.following.username}'
+        )
 
 
 class Favorite(models.Model):
@@ -249,8 +249,8 @@ class Favorite(models.Model):
 
     def __str__(self):
         return (
-            f'У пользователя {self.user.username} рецепт {self.favirite.recipe}'
-            'в списке избранного.'
+            f'У пользователя {self.user.username} рецепт'
+            f'{self.favirite.recipe} в списке избранного.'
         )
 
 
@@ -262,6 +262,7 @@ class ShoppingCart(models.Model):
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE
     )
+
     class Meta:
         default_related_name = 'shopping'
         constraints = [
@@ -276,6 +277,6 @@ class ShoppingCart(models.Model):
 
     def __str__(self):
         return (
-            f'У пользователя {self.user.username} рецепт {self.favirite.recipe}'
-            'в списке покупок.'
+            f'У пользователя {self.user.username} рецепт'
+            f'{self.favirite.recipe} в списке покупок.'
         )

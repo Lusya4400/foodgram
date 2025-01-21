@@ -3,11 +3,9 @@ import base64
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-# from .conctans import MAX_LENGTH_150, MAX_LENGTH_254
 from .models import (
     Favorite, Follow, Ingredient, IngredientRecipe, Recipe,
     ShoppingCart, Tag)
@@ -15,86 +13,7 @@ from .models import (
 User = get_user_model()
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level = logging.DEBUG)
-
-# class SignupSerializer(serializers.ModelSerializer):
-#     """Сериализатор для регистрации пользователя."""
-#     email = serializers.EmailField(max_length=MAX_LENGTH_254, required=True)
-#     username = serializers.CharField(
-#         max_length=MAX_LENGTH_150,
-#         required=True,
-#         validators=[validate_username],
-#     )
-#     first_name = serializers.CharField(
-#         max_length=MAX_LENGTH_150, required=True)
-#     last_name = serializers.CharField(max_length=MAX_LENGTH_150, required=True)
-#     password = serializers.CharField(write_only=True, required=True)
-
-#     class Meta:
-#         model = User
-#         fields = (
-#             'email', 'id', 'username', 'first_name', 'last_name', 'password')
-
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=User.objects.all(),
-#                 fields=('username', 'email'),
-#                 message='Пользователь с такими email и '
-#                 'именем пользователя(ником) уже зарегистрирован в системе!'
-#             )
-#         ]
-
-#     def validate(self, data):
-#         """
-#         Проверка пользователя в базе данных.
-#         """
-#         username = data.get('username')
-#         email = data.get('email')
-#         errors = {}
-
-#         user = User.objects.filter(
-#             Q(username=username) | Q(email=email)
-#         ).first()
-
-#         if user:
-#             if user.username != username:
-#                 errors["email"] = [
-#                     "Это имя пользователя(ник) уже используется в системе."
-#                 ]
-#             if user.email != email:
-#                 errors["username"] = [
-#                     "Пользователь с таким email уже зарегистрирован."
-#                 ]
-
-#         if errors:
-#             raise serializers.ValidationError(errors)
-#         return data
-
-#     def create(self, validated_data):
-#         """
-#         Создание пользователя.
-#         """
-#         user = User(**validated_data)
-#         user.set_password(validated_data['password'])
-#         user.save()
-#         return user
-
-
-# class TokenSerializer(serializers.Serializer):
-#     """Сериализатор для получения токена."""
-#     email = serializers.EmailField(max_length=MAX_LENGTH_254, required=True)
-#     password = serializers.CharField(write_only=True, required=True)
-
-#     def validate(self, data):
-#         """
-#         Проверка данных для указанного пользователя.
-#         """
-#         email = data.get('email')
-#         password = data.get('password')
-#         user = User.objects.filter(email=email).first()
-#         if user is None or not user.check_password(password):
-#             raise serializers.ValidationError('Invalid credentials')
-#         return data
+logging.basicConfig(level=logging.DEBUG)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -138,6 +57,7 @@ class IngredientRecipeSerializerForUpdate(serializers.Serializer):
                 f"Ингредиент с id {ingredient_id}")
         return data
 
+
 class IngredientRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для ингредиентов в рецепте."""
     id = serializers.PrimaryKeyRelatedField(
@@ -163,7 +83,6 @@ class Base64ImageField(serializers.ImageField):
 
 class UserModelSerializer(serializers.ModelSerializer):
     """Сериализатор для модели пользователя."""
- #   email = serializers.EmailField(required=True)
     avatar = Base64ImageField(required=False, allow_null=True)
     is_subscribed = serializers.SerializerMethodField()
 
@@ -181,32 +100,6 @@ class UserModelSerializer(serializers.ModelSerializer):
             request and request.user.is_authenticated
             and Follow.objects.filter(user=request.user, following=obj)
         )
-
-        # request = self.context.get('request')
-        # user = self.context['request'].user if request else None
-        # if user and user.is_authenticated:
-        #     return Follow.objects.filter(user=user, following=obj).exists()
-        # return False
-
-
-# class ChangePasswordSerializer(serializers.Serializer):
-#     """Сериализатор для смены пароля."""
-#     new_password = serializers.CharField(required=True)
-#     current_password = serializers.CharField(required=True)
-
-#     def validate_current_password(self, value):
-#         """Проверка старого пароля."""
-#         user = self.context['request'].user
-#         if not user.check_password(value):
-#             raise serializers.ValidationError("Старый пароль неверен.")
-#         return value
-
-#     def validate_new_password(self, value):
-#         """Проверка нового пароля."""
-#         if len(value) < 8:
-#             raise serializers.ValidationError(
-#                 "Пароль должен содержать минимум 8 символов.")
-#         return value
 
 
 class UserAvatarSerializer(serializers.ModelSerializer):
@@ -289,16 +182,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             if not ingredient.get('id') or not ingredient.get('amount'):
                 raise serializers.ValidationError(
                     "Указание ингредиента и количества обязательно.")
-            # try:
-            #     Ingredient.objects.get(id=ingredient['id'])
-            # except Ingredient.DoesNotExist:
-            #     raise serializers.ValidationError(
-            #         f"Ингредиент с id {ingredient['id']} не найден.")
-            # amount = ingredient['amount']
-            # if amount is None or int(amount) <= 0:
-            #     raise serializers.ValidationError(
-            #         "Количество ингредиентов должно быть положительным."
-            #         f"Ингредиент с id {ingredient['id']}")
         ingredients_id = [ingredient['id'] for ingredient in ingredients]
         if len(ingredients_id) != len(set(ingredients_id)):
             raise serializers.ValidationError(
@@ -308,26 +191,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         if len(tags) != len(set(tags)):
             raise serializers.ValidationError("Теги должны быть уникальными.")
         return data
-    
+
     @staticmethod
     def add_ingredients_tags(ingredients, tags, recipe):
         """Установка тегов и ингредиентов для рецепта."""
-        IngredientRecipe.objects.bulk_create(
-                [
-                    IngredientRecipe(
-                    recipe=recipe, ingredient_id=ingredient['id'],
-                    amount=ingredient['amount']
-                    ) for ingredient in ingredients
-                ]
+        IngredientRecipe.objects.bulk_create([
+            IngredientRecipe(
+                recipe=recipe, ingredient_id=ingredient['id'],
+                amount=ingredient['amount']
+            ) for ingredient in ingredients]
         )
-        # for ingredient in ingredients:
-        #     current_ingredient = Ingredient.objects.get(id=ingredient['id'])
-        #     amount = ingredient['amount']
-        #     IngredientRecipe.objects.create(
-        #         recipe=recipe,
-        #         ingredient=current_ingredient,
-        #         amount=amount
-        #     )
         recipe.tags.set(tags)
 
     def create(self, validated_data):
@@ -369,7 +242,6 @@ class UserSerializerForSubscribe(UserModelSerializer):
 
     Добавляет информацию о количестве рецептов.
     """
-    # is_subscribed = serializers.BooleanField(read_only=True, default=True)
     recipes = RecipeSerializerForSubscribe(many=True)
     recipes_count = serializers.SerializerMethodField()
 
@@ -420,14 +292,11 @@ class FollowSerializer(serializers.ModelSerializer):
 class FavoriteSerializer(serializers.ModelSerializer):
     """Сериализатор для избранных рецептов."""
     # При удалении поля user вылетает ошибка "user": "Обязательное поле."
-    # №UNIQUE constraint failed: recipes_baseuserrecipe.user_id, recipes_baseuserrecipe.recipe_id
     user = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,
         default=serializers.CurrentUserDefault()
     )
-
-    #recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
 
     class Meta:
         model = Favorite
@@ -454,8 +323,6 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         read_only=True,
         default=serializers.CurrentUserDefault()
     )
-
-    # recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
 
     class Meta:
         model = ShoppingCart
