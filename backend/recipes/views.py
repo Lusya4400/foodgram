@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect
 from django.http import HttpResponse
@@ -18,10 +20,13 @@ from .models import (
 from .permissions import IsAuthor
 from .serializers import (
     IngredientSerializer, RecipeSerializer, RecipeSerializerForRead,
-    UserModelSerializer, UserAvatarSerializer, SignupSerializer,
-    TokenSerializer, ChangePasswordSerializer, TagSerializer, FollowSerializer,
+    UserModelSerializer, UserAvatarSerializer, TagSerializer, FollowSerializer,
     FavoriteSerializer, ShoppingCartSerializer
+    #SignupSerializer,TokenSerializer, ChangePasswordSerializer, 
 )
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level = logging.DEBUG)
 
 User = get_user_model()
 
@@ -30,15 +35,15 @@ class UserPagination(PageNumberPagination):
     """Пагинатор для списка пользователей."""
     page_size = PAGE_SIZE_USERS
     page_size_query_param = 'limit'
-    max_page_size = MAX_PAGE_SIZE
+ #   max_page_size = MAX_PAGE_SIZE
 
-    def get_paginated_response(self, data):
-        return Response({
-            'count': self.page.paginator.count,
-            'next': self.get_next_link(),
-            'previous': self.get_previous_link(),
-            'results': data
-        })
+    # def get_paginated_response(self, data):
+    #     return Response({
+    #         'count': self.page.paginator.count,
+    #         'next': self.get_next_link(),
+    #         'previous': self.get_previous_link(),
+    #         'results': data
+    #     })
 
 
 class RecipePagination(UserPagination):
@@ -50,41 +55,46 @@ class UserModelViewSet(UserViewSet):
     """Вьюсет для управления пользователями."""
     queryset = User.objects.all()
     serializer_class = UserModelSerializer
+    pagination_class = UserPagination
 
     def get_permissions(self):
         """Выбор пермишена в зависимости от метода запроса."""
         if self.request.method in ['GET', 'POST']:
+            logger.debug(f'Validated {self.request.method}')
             return [AllowAny()]
         return [IsAuthenticated()]
 
-    def create(self, request):
-        """Создание пользователя."""
-        serializer = SignupSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(
-            serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def create(self, request):
+    #     """Создание пользователя."""
+    #     serializer = SignupSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(
+    #         serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=('post',),
-            permission_classes=(IsAuthenticated,))
-    def set_password(self, request):
-        """Установка пароля."""
-        if not request.user.is_authenticated:
-            return Response(
-                {'detail': 'Пользователь не авторизован.'},
-                status=status.HTTP_401_UNAUTHORIZED)
-        serializer = ChangePasswordSerializer(
-            data=request.data, context={'request': request})
-        if serializer.is_valid():
-            user = request.user
-            user.set_password(serializer.validated_data['new_password'])
-            user.save()
-            return Response(
-                {"detail": "Пароль успешно изменен."},
-                status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # @action(detail=False, methods=('post',),
+    #         permission_classes=(IsAuthenticated,))
+    # def set_password(self, request):
+    #     """Установка пароля."""
+    #     if not request.user.is_authenticated:
+    #         return Response(
+    #             {'detail': 'Пользователь не авторизован.'},
+    #             status=status.HTTP_401_UNAUTHORIZED)
+    #     serializer = ChangePasswordSerializer(
+    #         data=request.data, context={'request': request})
+    #     if serializer.is_valid():
+    #         user = request.user
+    #         user.set_password(serializer.validated_data['new_password'])
+    #         user.save()
+    #         return Response(
+    #             {"detail": "Пароль успешно изменен."},
+    #             status=status.HTTP_204_NO_CONTENT)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    # Без этого метода в список пользователей выводится только текущий
+    # пользователь, несмотря на то, что выполены настройки joser в settings
+    # 'PERMISSIONS':{'user_list': ['rest_framework.permissions.AllowAny'],},
     def list(self, request):
         """Вывод списка пользователей с учетом огриничения limit."""
         limit = request.query_params.get('limit', 10)
@@ -93,6 +103,11 @@ class UserModelViewSet(UserViewSet):
         paginated_queryset = paginator.paginate_queryset(queryset, request)
         serializer = self.get_serializer(paginated_queryset, many=True)
         return paginator.get_paginated_response(serializer.data)
+    
+    # def list(self, request):
+    #     logger.debug(f'Validated {self.queryset}')
+    #     logger.debug(f'Validated {self.permission_classes}')
+    #     return super().list(request)
 
     def update_avatar(self, request):
         """Обновление аватара."""
@@ -112,27 +127,27 @@ class UserModelViewSet(UserViewSet):
             permission_classes=(IsAuthenticated,))
     def me(self, request):
         """Эндпоинт для изменения профиля текущего пользователя."""
-        if not request.user.is_authenticated:
-            return Response(
-                {'detail': 'Пользователь не авторизован.'},
-                status=status.HTTP_401_UNAUTHORIZED)
-        user = self.request.user
-        serializer = UserModelSerializer(user)
-        return Response(serializer.data)
+        # если убрать проверку, то при запросе от анонимного пользователя вылетает ошибка
+        # Original exception text was: 'AnonymousUser' object has no attribute 'email'.
+        if not request.user.is_authenticated: 
+            return Response( 
+                {'detail': 'Пользователь не авторизован.'}, 
+                status=status.HTTP_401_UNAUTHORIZED) 
+        return super().me(request)
 
 
-class TokenView(APIView):
-    """Вьюсет управления токенами."""
-    permission_classes = (AllowAny,)
+# class TokenView(APIView):
+#     """Вьюсет управления токенами."""
+#     permission_classes = (AllowAny,)
 
-    def post(self, request):
-        """Получение токена."""
-        serializer = TokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = User.objects.get(email=serializer.validated_data['email'])
-        token, _ = Token.objects.get_or_create(user=user)
+#     def post(self, request):
+#         """Получение токена."""
+#         serializer = TokenSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = User.objects.get(email=serializer.validated_data['email'])
+#         token, _ = Token.objects.get_or_create(user=user)
 
-        return Response({'auth_token': token.key}, status=status.HTTP_200_OK)
+#         return Response({'auth_token': token.key}, status=status.HTTP_200_OK)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -198,7 +213,7 @@ class RecipeLinkView(APIView):
         try:
             recipe = Recipe.objects.get(id=id)
             short_link = (
-                f"{request.build_absolute_uri('/s/')[:-1]}/{recipe.code}/"
+                f"{request.build_absolute_uri('/s/')[:-1]}/{recipe.short_code}/"
             )
             return Response(
                 {'short-link': short_link}, status=status.HTTP_200_OK)
@@ -210,11 +225,11 @@ class RecipeLinkView(APIView):
 
 class RecipeDetailView(APIView):
     """Вьюсет для перехода по короткой ссылке."""
-    def get(self, request, code):
+    def get(self, request, short_code):
         try:
-            recipe = Recipe.objects.get(code=code)
+            recipe = Recipe.objects.get(short_code=short_code)
             return redirect(
-                f'{request.build_absolute_uri}api/recipes/{recipe.id}/')
+                f'{request.build_absolute_uri}/api/recipes/{recipe.id}/')
         except Recipe.DoesNotExist:
             return Response(
                 {'error': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND

@@ -1,11 +1,14 @@
 """Настройка панели администратора."""
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 
-from .models import UserModel, Tag, Ingredient, Recipe
+from .models import Tag, Ingredient, Recipe, IngredientRecipe, TagRecipe
+
+User = get_user_model()
 
 
-@admin.register(UserModel)
+@admin.register(User)
 class UserModelAdmin(UserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name')
     search_fields = ('username', 'email')
@@ -26,12 +29,20 @@ class IngredientAdmin(admin.ModelAdmin):
     list_filter = ('name',)
 
 
+class IngredientInLine(admin.TabularInline):
+    model = IngredientRecipe
+    extra = 1
+    min_num = 1
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author', 'get_favorite_count')
     search_fields = ('name', 'author')
     list_filter = ('tags',)
     ordering = ('name',)
+
+    inlines = [IngredientInLine]
 
     def get_favorite_count(self, obj):
         """Возвращает количество добавлений рецепта в избранное."""
