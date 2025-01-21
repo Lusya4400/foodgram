@@ -90,6 +90,7 @@ class UserModelViewSet(UserViewSet):
         """Эндпоинт для изменения профиля текущего пользователя."""
         # если убрать проверку, то при запросе от анонимного пользователя
         # вылетает ошибка
+        # проверить повторно
         # Original exception text was:
         # 'AnonymousUser' object has no attribute 'email'.
         if not request.user.is_authenticated:
