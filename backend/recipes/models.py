@@ -6,18 +6,18 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from .conctans import (
+from .constans import (
     LENGTH_SHORT_CODE, MIN_COOKING_TIME, MAX_SMAL_INTEGER_NUM,
-    MIN_QUANTITY_INGREDIENT,
-    MAX_LENGTH_32, MAX_LENGTH_64, MAX_LENGTH_128,
-    MAX_LENGTH_150, MAX_LENGTH_256
+    MIN_QUANTITY_INGREDIENT, MAX_LENGTH_SLAG, MAX_LENGTH_TAG,
+    MAX_LENGTH_NAME_USER, MAX_LENGTH_INGREDIENT, MAX_LENGTH_RECIPE,
+    MAX_LENGTH_USER, MAX_LENGTH_MEASHUREMENT_UNIT
 )
 
 
 class User(AbstractUser):
     """Кастомная модель пользователя."""
     username = models.CharField(
-        max_length=MAX_LENGTH_150,
+        max_length=MAX_LENGTH_USER,
         unique=True,
         validators=[UnicodeUsernameValidator()],
         verbose_name='Никнейм'
@@ -27,11 +27,11 @@ class User(AbstractUser):
         verbose_name='Email'
     )
     first_name = models.CharField(
-        max_length=MAX_LENGTH_150,
+        max_length=MAX_LENGTH_NAME_USER,
         verbose_name='Имя'
     )
     last_name = models.CharField(
-        max_length=MAX_LENGTH_150,
+        max_length=MAX_LENGTH_NAME_USER,
         verbose_name='Фамилия'
     )
     avatar = models.ImageField(
@@ -60,11 +60,11 @@ class User(AbstractUser):
 class Ingredient(models.Model):
     """Модель для ингредиентов."""
     name = models.CharField(
-        max_length=MAX_LENGTH_128,
+        max_length=MAX_LENGTH_INGREDIENT,
         verbose_name='Наименование'
     )
     measurement_unit = models.CharField(
-        max_length=MAX_LENGTH_64,
+        max_length=MAX_LENGTH_MEASHUREMENT_UNIT,
         verbose_name='Единица измерения'
     )
 
@@ -86,11 +86,11 @@ class Ingredient(models.Model):
 class Tag(models.Model):
     """Модель для тегов."""
     name = models.CharField(
-        max_length=MAX_LENGTH_32,
+        max_length=MAX_LENGTH_TAG,
         verbose_name='Наименование'
     )
     slug = models.SlugField(
-        max_length=MAX_LENGTH_32,
+        max_length=MAX_LENGTH_SLAG,
         verbose_name='Слаг'
     )
 
@@ -106,7 +106,7 @@ class Tag(models.Model):
 class Recipe(models.Model):
     """Модель для рецептов."""
     name = models.CharField(
-        max_length=MAX_LENGTH_256,
+        max_length=MAX_LENGTH_RECIPE,
         verbose_name='Наименование'
     )
     text = models.TextField(
@@ -152,7 +152,7 @@ class Recipe(models.Model):
     @staticmethod
     def generate_code():
         while True:
-            short_code = str(uuid.uuid4().int)[:10]
+            short_code = str(uuid.uuid4().int)[:LENGTH_SHORT_CODE]
             if not Recipe.objects.filter(short_code=short_code):
                 return short_code
 
@@ -247,12 +247,6 @@ class Favorite(models.Model):
         verbose_name_plural = 'Избранные рецепты'
         ordering = ['user__username']
 
-    def __str__(self):
-        return (
-            f'У пользователя {self.user.username} рецепт'
-            f'{self.favirite.recipe} в списке избранного.'
-        )
-
 
 class ShoppingCart(models.Model):
     """Модель для списка покупок."""
@@ -274,9 +268,3 @@ class ShoppingCart(models.Model):
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Покупки'
         ordering = ['user__username']
-
-    def __str__(self):
-        return (
-            f'У пользователя {self.user.username} рецепт'
-            f'{self.favirite.recipe} в списке покупок.'
-        )

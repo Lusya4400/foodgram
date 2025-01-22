@@ -20,7 +20,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://foodfavorite.zapto.org',
 ]
 
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -32,6 +31,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'django_filters',
+    'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
 ]
 
@@ -66,8 +66,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend_foodgram.wsgi.application'
 
-SQL_BASE = os.getenv('SQL_BASE')
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -79,24 +77,12 @@ DATABASES = {
     }
 }
 
-# if not SQL_BASE:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': os.getenv('POSTGRES_DB', 'django'),
-#             'USER': os.getenv('POSTGRES_USER', 'django'),
-#             'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-#             'HOST': os.getenv('DB_HOST', ''),
-#             'PORT': os.getenv('DB_PORT', 5432)
-#         }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
-# else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': BASE_DIR / 'db.sqlite3',
-#         }
-#     }
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -149,8 +135,8 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'SERIALIZERS': {
-        'user': 'recipes.serializers.UserModelSerializer',
-        'current_user': 'recipes.serializers.UserModelSerializer',
+        'user': 'api.serializers.UserModelSerializer',
+        'current_user': 'api.serializers.UserModelSerializer',
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
