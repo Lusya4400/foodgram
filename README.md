@@ -89,8 +89,7 @@ GET http://127.0.0.1:8000/api/v1/titles/{titles_id}/
 * Django — основной фреймворк для разработки.
 * Django REST Framework — для создания API.
 * PostgreSQL — в качестве базы данных.
-* GitHub Actions - для автоматического деплоя проекта.
-* JWT — для аутентификации пользователей.
+* Joser — для аутентификации пользователей.
 
 ## Авторы
 * [Ludmila Usacheva](https://github.com/Lusya4400)
