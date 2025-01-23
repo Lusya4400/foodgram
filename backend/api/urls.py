@@ -1,5 +1,5 @@
 from django.urls import include, path
-from recipes.views import (
+from .views import (
     IngredientViewSet, RecipeViewSet, UserModelViewSet,
     TagViewSet, RecipeLinkView, RecipeDetailView)
 from rest_framework import routers

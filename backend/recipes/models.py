@@ -115,8 +115,20 @@ class Recipe(models.Model):
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
         validators=[
-            MinValueValidator(MIN_COOKING_TIME),
-            MaxValueValidator(MAX_SMAL_INTEGER_NUM)
+            MinValueValidator(
+                MIN_COOKING_TIME,
+                message=(
+                    'Минимальное время приготовления:'
+                    f'{MIN_COOKING_TIME}'
+                )
+            ),
+            MaxValueValidator(
+                MAX_SMAL_INTEGER_NUM,
+                message=(
+                    'Максимальное время приготовления:'
+                    f'{MAX_SMAL_INTEGER_NUM}'
+                )
+            )
         ]
     )
     author = models.ForeignKey(
@@ -177,8 +189,19 @@ class IngredientRecipe(models.Model):
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
         validators=[
-            MinValueValidator(MIN_QUANTITY_INGREDIENT),
-            MaxValueValidator(MAX_SMAL_INTEGER_NUM)
+            MinValueValidator(
+                MIN_QUANTITY_INGREDIENT,
+                message=(
+                    'Минимльное количество ингредиента:'
+                    f'{MIN_QUANTITY_INGREDIENT}'
+                )),
+            MaxValueValidator(
+                MAX_SMAL_INTEGER_NUM,
+                message=(
+                    'Максимальное количество ингредиента:'
+                    f'{MAX_SMAL_INTEGER_NUM}'
+                )
+            )
         ]
     )
 

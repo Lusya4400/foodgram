@@ -14,7 +14,6 @@ SECRET_KEY = os.getenv('SECRET_KEY', get_random_secret_key())
 DEBUG = os.getenv('DEBUG') == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'foodfavorite.zapto.org']
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 CSRF_TRUSTED_ORIGINS = [
     'https://foodfavorite.zapto.org',
@@ -77,13 +76,6 @@ DATABASES = {
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -142,4 +134,5 @@ DJOSER = {
         'user_list': ['rest_framework.permissions.AllowAny'],
     },
     'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
 }

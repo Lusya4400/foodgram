@@ -26,12 +26,14 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
-class IngredientRecipeSerializerForUpdate(serializers.Serializer):
+# Изменить id на PrimaryKeyRelatedField не получается. Ошибки
+class IngredientRecipeSerializerForUpdate(serializers.ModelSerializer):
     """Сериализатор для получения ингредиентов.
 
     Предназначен для обновления состава ингредиентов в рецепте."""
     id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    # id = serializers.PrimaryKeyRelatedField(
+    # queryset=Ingredient.objects.all(), source='ingredient.id')
 
     class Meta:
         model = IngredientRecipe
@@ -103,7 +105,7 @@ class UserAvatarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['avatar']
+        fields = ('avatar',)
 
 
 class RecipeSerializerForRead(serializers.ModelSerializer):
@@ -169,10 +171,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         if ingredients is None or len(ingredients) == 0:
             raise serializers.ValidationError(
                 "Список ингредиентов не может быть пустым.")
-        for ingredient in ingredients:
-            if not ingredient.get('id') or not ingredient.get('amount'):
-                raise serializers.ValidationError(
-                    "Указание ингредиента и количества обязательно.")
         ingredients_id = [ingredient['id'] for ingredient in ingredients]
         if len(ingredients_id) != len(set(ingredients_id)):
             raise serializers.ValidationError(
@@ -258,17 +256,13 @@ class UserSerializerForReadSubscribe(UserModelSerializer):
 
         recipes_query = obj.recipes.all()
         if recipes_limit:
-            recipes_query = recipes_query[:int(recipes_limit)]
-
+            try:
+                recipes_query = recipes_query[:int(recipes_limit)]
+            except ValueError:
+                pass
         recipes_data = RecipeSerializerForSubscribe(
             recipes_query, many=True).data
-
-        fields_to_include = ['id', 'name', 'image', 'cooking_time']
-        filtered_recipes = [
-            {field: recipe.get(field) for field in fields_to_include}
-            for recipe in recipes_data
-        ]
-        return filtered_recipes
+        return recipes_data
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -307,7 +301,6 @@ class FollowSerializer(serializers.ModelSerializer):
 
 class FavoriteSerializer(serializers.ModelSerializer):
     """Сериализатор для избранных рецептов."""
-    # При удалении поля user вылетает ошибка "user": "Обязательное поле."
     user = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,
@@ -333,7 +326,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     """Сериализатор для списка покупок."""
-    # При удалении поля user вылетает ошибка "user": "Обязательное поле."
     user = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,
