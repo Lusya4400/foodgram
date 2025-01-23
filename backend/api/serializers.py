@@ -26,33 +26,16 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
-# Изменить id на PrimaryKeyRelatedField не получается. Ошибки
+# Ура!!! Заработало!!!
 class IngredientRecipeSerializerForUpdate(serializers.ModelSerializer):
     """Сериализатор для получения ингредиентов.
 
     Предназначен для обновления состава ингредиентов в рецепте."""
-    id = serializers.IntegerField()
-    # id = serializers.PrimaryKeyRelatedField(
-    # queryset=Ingredient.objects.all(), source='ingredient.id')
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
 
     class Meta:
         model = IngredientRecipe
         fields = ('id', 'amount')
-
-    def validate(self, data):
-        """Проверка данных ингредиентов."""
-        ingredient_id = data.get('id')
-        try:
-            Ingredient.objects.get(id=ingredient_id)
-        except Ingredient.DoesNotExist:
-            raise serializers.ValidationError(
-                f"Ингредиент с id {ingredient_id} не найден.")
-        amount = data.get('amount')
-        if amount is None or int(amount) <= 0:
-            raise serializers.ValidationError(
-                "Количество ингредиентов должно быть положительным."
-            )
-        return data
 
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
@@ -193,7 +176,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         """Установка тегов и ингредиентов для рецепта."""
         IngredientRecipe.objects.bulk_create([
             IngredientRecipe(
-                recipe=recipe, ingredient_id=ingredient['id'],
+                recipe=recipe, ingredient_id=ingredient['id'].id,
                 amount=ingredient['amount']
             ) for ingredient in ingredients]
         )

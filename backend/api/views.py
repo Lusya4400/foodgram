@@ -34,17 +34,22 @@ class UserModelViewSet(UserViewSet):
 
     def get_permissions(self):
         """Выбор пермишена в зависимости от метода запроса."""
-        if self.request.method in ['GET', 'POST']:
+        route_name = self.request.resolver_match.url_name
+        if (
+            self.request.method == 'GET' and route_name not in [
+                'subscriptions', 'users-me'
+            ] or (self.request.method == 'POST' and (
+                self.request.path in ['/api/users/', '/api/auth/']))
+        ):
             return (AllowAny(),)
         return (IsAuthenticated(),)
 
     def update_avatar(self, request):
         """Обновление аватара."""
         serializer = UserAvatarSerializer(request.user, data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def destroy_avatar(self, request):
         """Удаление аватара."""
@@ -52,27 +57,10 @@ class UserModelViewSet(UserViewSet):
         request.user.save()
         return Response(status=204)
 
-    @action(detail=False, methods=('get',),
-            permission_classes=(IsAuthenticated,))
-    def me(self, request):
-        """Эндпоинт для изменения профиля текущего пользователя."""
-        # если убрать проверку, то при запросе от анонимного пользователя
-        # вылетает ошибка
-        # Original exception text was:
-        # 'AnonymousUser' object has no attribute 'email'.
-        if not request.user.is_authenticated:
-            return Response(
-                {'detail': 'Пользователь не авторизован.'},
-                status=status.HTTP_401_UNAUTHORIZED)
-        return super().me(request)
-
     @action(detail=True, methods=('post',),
             permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id):
         """Создание подписки."""
-        if request.user.is_anonymous:
-            return Response({"detail": "Необходима авторизация."},
-                            status=status.HTTP_401_UNAUTHORIZED)
         following_user = get_object_or_404(User, id=id)
         serializer = FollowSerializer(
             data={'following': following_user.id},

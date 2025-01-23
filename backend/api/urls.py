@@ -19,7 +19,7 @@ urlpatterns = [
          UserModelViewSet.as_view({
              'put': 'update_avatar',
              'delete': 'destroy_avatar'
-         })),
+         }), name='me'),
     path('recipes/<int:id>/get-link/', RecipeLinkView.as_view(),
          name='recipe-link'),
     path('users/<int:id>/subscribe/',
