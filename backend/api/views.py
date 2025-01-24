@@ -240,4 +240,5 @@ class RecipeDetailView(APIView):
         recipe = get_object_or_404(Recipe, short_code=short_code)
     #    recipe_detail_url = reverse('recipe-detail', kwargs={'pk': recipe.id})
     #    return redirect(recipe_detail_url)
-        return redirect(f"/recipes/{recipe.id}")
+   #     return redirect(f"/recipes/{recipe.id}")
+        return redirect(f"https://foodfavorite.zapto.org/recipes/{recipe.id}")
