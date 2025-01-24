@@ -1,7 +1,9 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404
 from django.http import HttpResponse
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.urls import reverse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -25,6 +27,8 @@ from api.pagination import Pagination
 
 User = get_user_model()
 
+logger=logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 class UserModelViewSet(UserViewSet):
     """Вьюсет для управления пользователями."""
@@ -181,17 +185,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_list(self, request):
         """Выгрузка списка покупок в файл txt."""
         user = request.user
-
         ingredients_summary = (
             ShoppingCart.objects.filter(user=user)
             .values(
                 'recipe__ingredients__name',
-                'recipe__ingredients__measurement_unit'
+                'recipe__ingredients__measurement_unit' 
             )
             .annotate(total_amount=Sum(
-                'recipe__ingredients__ingredientrecipe__amount'
+                'recipe__ingredients__ingredientrecipe__amount', distinct=True
             ))
         )
+
+        logger.debug(f'ingredients {ingredients_summary}')
 
         response_text = ""
         for ingredient in ingredients_summary:
@@ -200,8 +205,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             total_amount = ingredient['total_amount']
             response_text += (
                 f"{ingredient_name} ({meash_unit})"
-                f"— {total_amount}\n"
-            )
+                f"— {total_amount} \n")
 
         response = HttpResponse(response_text, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename="shoplist.txt"'

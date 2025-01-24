@@ -26,7 +26,6 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
-# Ура!!! Заработало!!!
 class IngredientRecipeSerializerForUpdate(serializers.ModelSerializer):
     """Сериализатор для получения ингредиентов.
 

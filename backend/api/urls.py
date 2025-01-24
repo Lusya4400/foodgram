@@ -1,7 +1,7 @@
 from django.urls import include, path
 from .views import (
     IngredientViewSet, RecipeViewSet, UserModelViewSet,
-    TagViewSet, RecipeLinkView, RecipeDetailView)
+    TagViewSet, RecipeLinkView)
 from rest_framework import routers
 
 router = routers.DefaultRouter()
@@ -36,7 +36,6 @@ urlpatterns = [
          RecipeViewSet.as_view({
              'post': 'add_to_cart',
              'delete': 'remove_from_cart'}), name='shopping'),
-    path('s/<int:short_code>/',
-         RecipeDetailView.as_view(), name='recipe_detail'),
+
     path('', include(router.urls)),
 ]
