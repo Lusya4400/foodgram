@@ -78,12 +78,6 @@ POST http://foodfavorite.zapto.org/api/pecipes/
 }
 ```
 
-Получение произведения по id:
-
-```
-GET http://127.0.0.1:8000/api/v1/titles/{titles_id}/
-```
-
 ## Технологии
 * Python - версия 3.9.13
 * Django — основной фреймворк для разработки.
