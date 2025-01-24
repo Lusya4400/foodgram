@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404
 from django.http import HttpResponse
 from django.db.models import Sum
-from django.urls import reverse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -238,6 +237,7 @@ class RecipeDetailView(APIView):
     """Вьюсет для перехода по короткой ссылке."""
     def get(self, request, short_code):
         recipe = get_object_or_404(Recipe, short_code=short_code)
-        # recipe_detail_url = reverse('recipe-detail', kwargs={'pk': recipe.id})
+        # recipe_detail_url = reverse('recipe-detail',
+        # kwargs={'pk': recipe.id})
         # return redirect(recipe_detail_url)
-        return redirect(f"/recipes/{recipe.id}") 
+        return redirect(f"/recipes/{recipe.id}")
