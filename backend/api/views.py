@@ -238,5 +238,6 @@ class RecipeDetailView(APIView):
     """Вьюсет для перехода по короткой ссылке."""
     def get(self, request, short_code):
         recipe = get_object_or_404(Recipe, short_code=short_code)
-        recipe_detail_url = reverse('recipe-detail', kwargs={'pk': recipe.id})
-        return redirect(recipe_detail_url)
+        # recipe_detail_url = reverse('recipe-detail', kwargs={'pk': recipe.id})
+        # return redirect(recipe_detail_url)
+        return redirect(f"/recipes/{recipe.id}") 
