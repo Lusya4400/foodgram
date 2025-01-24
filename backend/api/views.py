@@ -14,7 +14,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import RecipeFilter, IngredientFilter
 from recipes.models import (
-    Ingredient, Recipe, Tag, Follow, Favorite, ShoppingCart)
+    Ingredient, Recipe, Tag, Follow, Favorite, ShoppingCart, IngredientRecipe)
 from .permissions import IsAuthor
 from .serializers import (
     IngredientSerializer, RecipeSerializer, RecipeSerializerForRead,
@@ -182,20 +182,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Выгрузка списка покупок в файл txt."""
         user = request.user
         ingredients_summary = (
-            ShoppingCart.objects.filter(user=user)
+            IngredientRecipe.objects.filter(recipe__shopping__user=user)
             .values(
-                'recipe__ingredients__name',
-                'recipe__ingredients__measurement_unit'
+                'ingredient__name',
+                'ingredient__measurement_unit'
             )
-            .annotate(total_amount=Sum(
-                'recipe__ingredients__ingredientrecipe__amount', distinct=True
-            ))
+            .annotate(total_amount=Sum('amount'))
         )
-
         response_text = ""
         for ingredient in ingredients_summary:
-            ingredient_name = ingredient['recipe__ingredients__name']
-            meash_unit = ingredient['recipe__ingredients__measurement_unit']
+            ingredient_name = ingredient['ingredient__name']
+            meash_unit = ingredient['ingredient__measurement_unit']
             total_amount = ingredient['total_amount']
             response_text += (
                 f"{ingredient_name} ({meash_unit})"
