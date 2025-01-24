@@ -1,9 +1,7 @@
-import logging
-
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404
 from django.http import HttpResponse
-from django.db.models import Sum, Count
+from django.db.models import Sum
 from django.urls import reverse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -27,8 +25,6 @@ from api.pagination import Pagination
 
 User = get_user_model()
 
-logger=logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 class UserModelViewSet(UserViewSet):
     """Вьюсет для управления пользователями."""
@@ -189,14 +185,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ShoppingCart.objects.filter(user=user)
             .values(
                 'recipe__ingredients__name',
-                'recipe__ingredients__measurement_unit' 
+                'recipe__ingredients__measurement_unit'
             )
             .annotate(total_amount=Sum(
                 'recipe__ingredients__ingredientrecipe__amount', distinct=True
             ))
         )
-
-        logger.debug(f'ingredients {ingredients_summary}')
 
         response_text = ""
         for ingredient in ingredients_summary:
