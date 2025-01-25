@@ -3,7 +3,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
 from django.db.models import Sum
-from django.urls import reverse
+# from django.urls import reverse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -240,10 +240,12 @@ class RecipeLinkView(APIView):
 #     def get(self, request, short_code):
 #         recipe = get_object_or_404(Recipe, short_code=short_code)
 
-#         # recipe_detail_url = reverse('recipe-detail', kwargs={'pk': recipe.id})
-#         # return redirect(recipe_detail_url)
+#         recipe_detail_url = reverse('recipe-detail',
+# kwargs={'pk': recipe.id})
+#         return redirect(recipe_detail_url)
 #         return redirect(f"/recipes/{recipe.id}")
-#     #    return redirect(f"https://foodfavorite.zapto.org/recipes/{recipe.id}")
+#         return redirect(
+# f"https://foodfavorite.zapto.org/recipes/{recipe.id}")
 
 @require_http_methods(["GET"])
 def redirect_short_link(request, short_link):
