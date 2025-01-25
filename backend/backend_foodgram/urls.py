@@ -11,7 +11,6 @@ urlpatterns = [
     path('api/', include('api.urls')),
     # path('s/<int:short_code>/',
     #      RecipeDetailView.as_view(), name='redirect_short_link'),
-   
 ]
 
 if settings.DEBUG:
