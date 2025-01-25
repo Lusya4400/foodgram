@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, get_object_or_404
+from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
 from django.db.models import Sum
 from django.urls import reverse
@@ -234,12 +235,23 @@ class RecipeLinkView(APIView):
             {'short-link': short_link}, status=status.HTTP_200_OK)
 
 
-class RecipeDetailView(APIView):
-    """Вьюсет для перехода по короткой ссылке."""
-    def get(self, request, short_code):
-        recipe = get_object_or_404(Recipe, short_code=short_code)
+# class RecipeDetailView(APIView):
+#     """Вьюсет для перехода по короткой ссылке."""
+#     def get(self, request, short_code):
+#         recipe = get_object_or_404(Recipe, short_code=short_code)
 
-        recipe_detail_url = reverse('recipe-detail', kwargs={'pk': recipe.id})
-        return redirect(recipe_detail_url)
-    #    return redirect(f"/recipes/{recipe.id}")
-    #    return redirect(f"https://foodfavorite.zapto.org/recipes/{recipe.id}")
+#         # recipe_detail_url = reverse('recipe-detail', kwargs={'pk': recipe.id})
+#         # return redirect(recipe_detail_url)
+#         return redirect(f"/recipes/{recipe.id}")
+#     #    return redirect(f"https://foodfavorite.zapto.org/recipes/{recipe.id}")
+
+@require_http_methods(["GET"])
+def redirect_short_link(request, short_link):
+    """
+    Обрабатывает переход по короткой ссылке и переадресовывает
+    на оригинальный рецепт.
+    """
+    # Ищем рецепт по короткой ссылке
+    recipe = get_object_or_404(Recipe, short_link=short_link)
+    # Переадресовываем на оригинальный URL рецепта
+    return redirect(f"/recipes/{recipe.id}")
