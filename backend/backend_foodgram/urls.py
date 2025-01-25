@@ -3,14 +3,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from api.views import redirect_short_link
+from api.views import  RecipeDetailView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('s/<str:short_link>/', redirect_short_link, name='short_link'),
     path('api/', include('api.urls')),
-    # path('s/<int:short_code>/',
-    #      RecipeDetailView.as_view(), name='redirect_short_link'),
+    path('s/<int:short_code>/',
+         RecipeDetailView.as_view(), name='redirect_short_link'),
 ]
 
 if settings.DEBUG:
