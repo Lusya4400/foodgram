@@ -234,17 +234,6 @@ class RecipeLinkView(APIView):
             {'short-link': short_link}, status=status.HTTP_200_OK)
 
 
-# class RecipeDetailView(APIView):
-#     """Вьюсет для перехода по короткой ссылке."""
-#     def get(self, request, short_code):
-#         recipe = get_object_or_404(Recipe, short_code=short_code)
-
-#         recipe_detail_url = reverse('recipe-detail',
-# kwargs={'pk': recipe.id})
-#         return redirect(recipe_detail_url)
-#         return redirect(f"/recipes/{recipe.id}")
-
-
 class RecipeDetailView(APIView):
     """Вьюсет для перехода по короткой ссылке."""
     @action(detail=True, methods=('get',),
@@ -256,3 +245,13 @@ class RecipeDetailView(APIView):
 
         full_url = request.build_absolute_uri(recipe_detail_url)
         return HttpResponseRedirect(full_url)
+
+# class RecipeDetailView(APIView):
+#     """Вьюсет для перехода по короткой ссылке."""
+#     def get(self, request, short_code):
+#         recipe = get_object_or_404(Recipe, short_code=short_code)
+
+#         recipe_detail_url = reverse('recipe-detail',
+# kwargs={'pk': recipe.id})
+#         return redirect(recipe_detail_url)
+#         return redirect(f"/recipes/{recipe.id}")
