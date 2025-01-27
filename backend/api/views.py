@@ -247,6 +247,8 @@ class RecipeLinkView(APIView):
 
 class RecipeDetailView(APIView):
     """Вьюсет для перехода по короткой ссылке."""
+    @action(detail=True, methods=('get',),
+            permission_classes=(AllowAny,))
     def get(self, request, short_code):
         recipe = get_object_or_404(Recipe, short_code=short_code)
 
