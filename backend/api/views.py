@@ -240,7 +240,7 @@ class RecipeDetailView(APIView):
             permission_classes=(AllowAny,))
     def get(self, request, short_code):
         recipe = get_object_or_404(Recipe, short_code=short_code)
-        return redirect(f"/recipes/{recipe.id}")
+        return redirect(f"/recipes/{recipe.id}/")
         # recipe_detail_url = reverse('recipe-detail',
         # kwargs={'pk': recipe.id})
 
