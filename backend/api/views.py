@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse  # HttpResponseRedirect
 from django.db.models import Sum
-#from django.urls import reverse
+# from django.urls import reverse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -241,7 +241,8 @@ class RecipeDetailView(APIView):
     def get(self, request, short_code):
         recipe = get_object_or_404(Recipe, short_code=short_code)
         return redirect(f"/recipes/{recipe.id}")
-        # recipe_detail_url = reverse('recipe-detail', kwargs={'pk': recipe.id})
+        # recipe_detail_url = reverse('recipe-detail',
+        # kwargs={'pk': recipe.id})
 
         # full_url = request.build_absolute_uri(recipe_detail_url)
         # return HttpResponseRedirect(full_url)
