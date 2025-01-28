@@ -240,5 +240,5 @@ class RecipeDetailView(APIView):
             permission_classes=(AllowAny,))
     def get(self, request, short_code):
         recipe = get_object_or_404(Recipe, short_code=short_code)
-        full_url = (f"/recipes/{recipe.id}")
+        full_url = request.build_absolute_uri(f"/recipes/{recipe.id}")
         return HttpResponseRedirect(full_url)
